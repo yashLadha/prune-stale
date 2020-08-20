@@ -35,10 +35,11 @@ func filterOlderBranches(branchArr []string, oldChan chan []string, wg *sync.Wai
 
 func fetchOldBranches(outArr []string, wg *sync.WaitGroup) (olderBranches []string) {
 	oldChan := make(chan []string, 20)
+	fetchOlderBranchesLimit := 10
 
-	for i := 0; i < len(outArr); i += 10 {
+	for i := 0; i < len(outArr); i += fetchOlderBranchesLimit {
 		wg.Add(1)
-		go filterOlderBranches(outArr[i:min(i+10, len(outArr))], oldChan, wg)
+		go filterOlderBranches(outArr[i:min(i+fetchOlderBranchesLimit, len(outArr))], oldChan, wg)
 	}
 
 	wg.Wait()

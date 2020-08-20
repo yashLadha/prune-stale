@@ -37,11 +37,12 @@ func removeBranches(branches []string, removeChan chan int, wg *sync.WaitGroup) 
 }
 
 func removeStaleBranches(olderBranches []string, wg *sync.WaitGroup) int {
+	removalLimt := 5
 	removeChan := make(chan int, 20)
 
-	for i := 0; i < len(olderBranches); i += 10 {
+	for i := 0; i < len(olderBranches); i += removalLimt {
 		wg.Add(1)
-		go removeBranches(olderBranches[i:min(i+10, len(olderBranches))], removeChan, wg)
+		go removeBranches(olderBranches[i:min(i+removalLimt, len(olderBranches))], removeChan, wg)
 	}
 
 	wg.Wait()
