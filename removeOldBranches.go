@@ -37,7 +37,8 @@ func removeBranches(branches []string, removeChan chan int, wg *sync.WaitGroup) 
 }
 
 func removeStaleBranches(olderBranches []string, wg *sync.WaitGroup) int {
-	removalLimt := 5
+	// Done to basically avoid git errors
+	removalLimt := 15
 	removeChan := make(chan int, 20)
 
 	for i := 0; i < len(olderBranches); i += removalLimt {
@@ -45,13 +46,15 @@ func removeStaleBranches(olderBranches []string, wg *sync.WaitGroup) int {
 		go removeBranches(olderBranches[i:min(i+removalLimt, len(olderBranches))], removeChan, wg)
 	}
 
+	staleBranches := 0
+	go func() {
+		for cnt := range removeChan {
+			staleBranches += cnt
+		}
+	}()
+
 	wg.Wait()
 	close(removeChan)
-
-	staleBranches := 0
-	for cnt := range removeChan {
-		staleBranches += cnt
-	}
 
 	return staleBranches
 }

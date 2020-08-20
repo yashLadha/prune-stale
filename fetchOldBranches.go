@@ -42,12 +42,14 @@ func fetchOldBranches(outArr []string, wg *sync.WaitGroup) (olderBranches []stri
 		go filterOlderBranches(outArr[i:min(i+fetchOlderBranchesLimit, len(outArr))], oldChan, wg)
 	}
 
+	go func() {
+		for res := range oldChan {
+			olderBranches = append(olderBranches, res...)
+		}
+	}()
+
 	wg.Wait()
 	close(oldChan)
-
-	for res := range oldChan {
-		olderBranches = append(olderBranches, res...)
-	}
 
 	return
 }
